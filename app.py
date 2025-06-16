@@ -11,11 +11,11 @@ from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 
 # ================== Sidebar ==================
-menu = st.sidebar.selectbox("Navigasi Dashboard", [
-    "📊 Analisis Konsumsi Energi",
-    "🤖 Evaluasi Model Prediktif",
-    "📜 Riwayat Penggunaan Form",
-    "📂 Ringkasan Konsumsi & Formulir Prediksi"
+menu = st.sidebar.selectbox("Navigasi", [
+    "Analisis Data",
+    "Evaluasi Model",
+    "Riwayat Input",
+    "Form Prediksi"
 ])
 
 # ================== Load Dataset ==================
@@ -29,39 +29,39 @@ def load_data():
 
 df = load_data()
 
-# ================== Halaman 1: Eksplorasi Data ==================
-if menu == "📊 Analisis Konsumsi Energi":
-    st.title("📊 Analisis Konsumsi Energi Rumah Tangga")
+# ================== Halaman 1: Analisis Data ==================
+if menu == "Analisis Data":
+    st.title("Analisis Konsumsi Energi")
     st.markdown("""
-    Halaman ini menyajikan visualisasi dan statistik dari data penggunaan listrik rumah tangga.
+    Visualisasi dan statistik dari data penggunaan listrik rumah tangga.
     """)
 
-    st.subheader("📌 Statistik Ringkasan")
+    st.subheader("Statistik Ringkasan")
     st.write(df[['Global_active_power', 'Sub_metering_1', 'Sub_metering_2', 'Sub_metering_3', 'Estimated_Bill']].describe())
 
-    st.subheader("🔍 Distribusi Konsumsi Energi")
+    st.subheader("Distribusi Konsumsi Energi")
     fig1, ax1 = plt.subplots()
     sns.histplot(df['Global_active_power'], bins=50, kde=True, ax=ax1, color='darkcyan')
     ax1.set_xlabel("Daya Aktif Global (kW)")
     st.pyplot(fig1)
 
-    st.subheader("🏠 Proporsi Penggunaan Peralatan")
+    st.subheader("Proporsi Penggunaan Peralatan")
     sub_avg = df[['Sub_metering_1', 'Sub_metering_2', 'Sub_metering_3']].mean()
     fig2, ax2 = plt.subplots()
     ax2.pie(sub_avg, labels=sub_avg.index, autopct='%1.1f%%', startangle=90)
     ax2.axis('equal')
     st.pyplot(fig2)
 
-    st.subheader("🔗 Korelasi Antar Variabel")
+    st.subheader("Korelasi Antar Variabel")
     fig3, ax3 = plt.subplots(figsize=(8, 6))
     sns.heatmap(df.corr(numeric_only=True), annot=True, cmap='coolwarm', fmt='.2f', ax=ax3)
     st.pyplot(fig3)
 
-# ================== Halaman 2: Prediksi ==================
-elif menu == "🤖 Evaluasi Model Prediktif":
-    st.title("🤖 Evaluasi Model Prediktif")
+# ================== Halaman 2: Evaluasi Model ==================
+elif menu == "Evaluasi Model":
+    st.title("Evaluasi Model Prediktif")
     st.markdown("""
-    Halaman ini menampilkan performa berbagai model Machine Learning untuk prediksi tagihan listrik.
+    Performa model Machine Learning untuk prediksi tagihan listrik.
     """)
 
     X = df[['Global_active_power', 'Sub_metering_1', 'Sub_metering_2', 'Sub_metering_3']]
@@ -78,9 +78,9 @@ elif menu == "🤖 Evaluasi Model Prediktif":
         model.fit(X_train, y_train)
         y_pred = model.predict(X_test)
         st.subheader(f"Model: {name}")
-        st.write("📉 MAE:", mean_absolute_error(y_test, y_pred))
-        st.write("📉 RMSE:", np.sqrt(mean_squared_error(y_test, y_pred)))
-        st.write("📈 Skor R²:", r2_score(y_test, y_pred))
+        st.write("MAE:", mean_absolute_error(y_test, y_pred))
+        st.write("RMSE:", np.sqrt(mean_squared_error(y_test, y_pred)))
+        st.write("Skor R²:", r2_score(y_test, y_pred))
         fig, ax = plt.subplots()
         ax.scatter(y_test, y_pred, alpha=0.5)
         ax.set_xlabel("Nilai Aktual")
@@ -88,7 +88,7 @@ elif menu == "🤖 Evaluasi Model Prediktif":
         ax.set_title(f"Prediksi vs Aktual - {name}")
         st.pyplot(fig)
 
-    st.subheader("📈 Grafik Prediksi Tagihan Seiring Waktu")
+    st.subheader("Prediksi Tagihan Seiring Waktu")
     model = GradientBoostingRegressor()
     model.fit(X_train, y_train)
     df_sorted = df.sort_values(by='Waktu')
@@ -96,12 +96,14 @@ elif menu == "🤖 Evaluasi Model Prediktif":
 
     fig_plotly = px.line(df_sorted, x='Waktu', y=['Estimated_Bill', 'Prediksi'],
                          labels={'value': 'Tagihan Listrik (Rp)', 'Waktu': 'Tanggal'},
-                         title='Prediksi vs Aktual Estimasi Tagihan Listrik Seiring Waktu')
+                         title='Prediksi vs Aktual Estimasi Tagihan Listrik Seiring Waktu',
+                         template='plotly_white')
+    fig_plotly.update_traces(mode='lines+markers', hovertemplate='%{y:.2f} pada %{x}')
     st.plotly_chart(fig_plotly, use_container_width=True)
 
 # ================== Halaman 3: Riwayat Input ==================
-elif menu == "📜 Riwayat Penggunaan Form":
-    st.title("📜 Riwayat Penggunaan Form Prediksi")
+elif menu == "Riwayat Input":
+    st.title("Riwayat Penggunaan Form Prediksi")
     st.markdown("""
     Daftar input prediksi yang telah dilakukan selama sesi penggunaan dashboard.
     """)
@@ -109,31 +111,27 @@ elif menu == "📜 Riwayat Penggunaan Form":
         st.session_state.riwayat = []
     st.write(pd.DataFrame(st.session_state.riwayat))
 
-# ================== Halaman 4: Ringkasan & Prediksi ==================
-elif menu == "📂 Ringkasan Konsumsi & Formulir Prediksi":
-    st.title("📂 Ringkasan Konsumsi & Formulir Prediksi")
+# ================== Halaman 4: Form Prediksi ==================
+elif menu == "Form Prediksi":
+    st.title("Formulir Prediksi Tagihan Listrik")
     st.markdown("""
-    Lihat data konsumsi terbaru dan gunakan formulir untuk memperkirakan tagihan listrik berdasarkan input.
+    Gunakan formulir berikut untuk memperkirakan tagihan listrik berdasarkan input.
     """)
 
     st.dataframe(df.head(100))
 
-    st.subheader("📝 Formulir Input Prediksi")
-    nama = st.text_input("Masukkan Nama Anda")
+    st.subheader("Formulir Input")
+    nama = st.text_input("Nama Pengguna")
 
     if nama:
-        st.success(f"Hai, {nama}! Selamat datang di halaman prediksi 👋")
+        st.info(f"Selamat datang, {nama}.")
 
-    col1, col2 = st.columns(2)
+    gap = st.number_input("Daya Aktif Global (kW)", min_value=0.0, max_value=10.0, step=0.1, value=1.0)
+    sm1 = st.number_input("Meter Sub 1 (Dapur/Listrik Kecil)", min_value=0.0, max_value=30.0, step=1.0)
+    sm2 = st.number_input("Meter Sub 2 (Listrik Rumah Tangga)", min_value=0.0, max_value=30.0, step=1.0)
+    sm3 = st.number_input("Meter Sub 3 (Pemanas Air/Listrik Berat)", min_value=0.0, max_value=30.0, step=1.0)
 
-    with col1:
-        gap = st.slider("Daya Aktif Global (kW)", 0.0, 10.0, 1.0, 0.1)
-        sm1 = st.slider("Meter Sub 1 (Dapur/Listrik Kecil)", 0.0, 30.0, 0.0, 1.0)
-    with col2:
-        sm2 = st.slider("Meter Sub 2 (Listrik Rumah Tangga)", 0.0, 30.0, 0.0, 1.0)
-        sm3 = st.slider("Meter Sub 3 (Pemanas Air/Listrik Berat)", 0.0, 30.0, 0.0, 1.0)
-
-    if st.button("Prediksi Tagihan Listrik"):
+    if st.button("Prediksi Tagihan"):
         if not nama:
             st.warning("Silakan isi nama terlebih dahulu.")
         else:
@@ -145,7 +143,7 @@ elif menu == "📂 Ringkasan Konsumsi & Formulir Prediksi":
 
             st.markdown(f"""
             <div style='padding: 1rem; background-color: #d0f0c0; border-left: 5px solid green;'>
-                <h4>💡 Estimasi Tagihan Listrik:</h4>
+                <h4>Estimasi Tagihan Listrik:</h4>
                 <h2>Rp {hasil:,.2f}</h2>
             </div>
             """, unsafe_allow_html=True)
