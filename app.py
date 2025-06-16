@@ -14,7 +14,7 @@ from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 # ================== Sidebar Navigasi ==================
 st.sidebar.image("assets/tagihan_listrik.jpeg", width=150)
 st.sidebar.markdown("### ⚡ Prediksi Tagihan Listrik")
-st.sidebar.caption("Proyek Data Mining FMIPA UNNES")
+st.sidebar.caption("Pantau konsumsi energi dan estimasi tagihan secara interaktif")
 
 menu = st.sidebar.radio("Navigasi", [
     "🏠 Halaman Awal", 
